@@ -1,13 +1,13 @@
--- Simple Guns Mod for Minetest
+-- Muzzleloaders Mod for Minetest
 -- Adds a musket (heavy drop, fixed damage) and blunderbuss (short-range, distance-scaling damage with spread)
--- Now with ammo reload mechanics, knockback, target knockback, and nighttime muzzle flash!
+-- With ammo reload mechanics, knockback, target knockback, nighttime muzzle flash, and custom sounds!
 
-local modname = "simple_guns"
+local modname = "muzzleloaders"
 
 -- Ammo item
 minetest.register_craftitem(modname .. ":ammo", {
     description = "Ammo\nFor muskets and blunderbusses",
-    inventory_image = "default_coal_lump.png",  -- Placeholder texture
+    inventory_image = "muzzleloaders_ammo.png",  -- Your custom ammo icon
     stacks_max = 99,
 })
 
@@ -22,7 +22,7 @@ minetest.register_craft({
 minetest.register_entity(modname .. ":projectile", {
     physical = false,
     visual = "sprite",
-    textures = {"default_stick.png"},  -- Placeholder: tiny bullet visual
+    textures = {"muzzleloaders_projectile.png"},  -- Your custom bullet visual
     visual_size = {x = 0.1, y = 0.1},
     collisionbox = {{0, 0, 0}, {0, 0, 0}},
     timer = 0,
@@ -97,7 +97,7 @@ minetest.register_entity(modname .. ":projectile", {
     end,
 
     impact = function(self, pos)
-        -- Simple impact sound/effect
+        -- Simple impact sound/effect (keeping default punch as requested)
         minetest.sound_play("default_punch_stone", {pos = pos, gain = 0.3, max_hear_distance = 10})
         self.object:remove()
     end,
@@ -142,8 +142,9 @@ local function shoot(user, speed, grav, base_damage, is_blunder, recoil_strength
         end
     end
 
-    -- Firing sound
-    minetest.sound_play("default_place_node_hard", {pos = pos, gain = 1.0, max_hear_distance = 20})
+    -- Custom firing sound
+    local fire_sound = is_blunder and "blunderbuss.ogg" or "rifle.ogg"
+    minetest.sound_play(fire_sound, {pos = pos, gain = 1.0, max_hear_distance = 20})
 
     -- Apply knockback to user (recoil)
     if recoil_strength > 0 then
@@ -199,7 +200,7 @@ local function weapon_on_use(itemstack, user, pointed_thing, shoot_params)
         inv:remove_item("main", modname .. ":ammo")
         meta:set_int("loaded", 1)
         itemstack:set_meta(meta)
-        minetest.sound_play("default_place_node", {to_player = pname, gain = 0.5})
+        minetest.sound_play("reload.ogg", {to_player = pname, gain = 0.5})  -- Custom reload sound
         minetest.chat_send_player(pname, "Reloaded!")
         return itemstack
     else
@@ -218,7 +219,7 @@ end
 -- Musket tool
 minetest.register_tool(modname .. ":musket", {
     description = "Musket\nHeavy-dropping rifle (reload with sneak + right-click)",
-    inventory_image = "default_tool_steelpick.png",  -- Placeholder texture
+    inventory_image = "muzzleloaders_musket.png",  -- Your custom musket icon
     groups = {flammable = 2},
     on_use = function(itemstack, user, pointed_thing)
         return weapon_on_use(itemstack, user, pointed_thing, {60, 50, 15, false, 2, 3})  -- speed, grav, dmg, is_blunder, recoil, target_kb
@@ -228,7 +229,7 @@ minetest.register_tool(modname .. ":musket", {
 -- Blunderbuss tool
 minetest.register_tool(modname .. ":blunderbuss", {
     description = "Blunderbuss\nClose-range spread weapon (reload with sneak + right-click)",
-    inventory_image = "default_tool_mese_pick.png",  -- Placeholder texture
+    inventory_image = "muzzleloaders_blunderbuss.png",  -- Your custom blunderbuss icon
     groups = {flammable = 2},
     on_use = function(itemstack, user, pointed_thing)
         return weapon_on_use(itemstack, user, pointed_thing, {25, 5, 20, true, 5, 6})  -- speed, grav, dmg, is_blunder, recoil, target_kb
@@ -248,4 +249,4 @@ minetest.register_craft({
     recipe = {"default:steel_ingot", "group:wood", "default:stick", "default:coal_lump"},
 })
 
-print("[" .. modname .. "] Loaded with all mechanics including nighttime muzzle flash!")
+print("[" .. modname .. "] Loaded with custom reload sound and all mechanics!")
