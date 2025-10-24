@@ -220,7 +220,7 @@ minetest.register_tool(modname .. ":musket", {
     inventory_image = "muzzleloaders_musket.png",  -- Your custom musket icon
     groups = {flammable = 2},
     on_use = function(itemstack, user, pointed_thing)
-        return weapon_on_use(itemstack, user, pointed_thing, {80, 30, 30, false, 2, 3})  -- speed, grav, dmg, is_blunder, recoil, target_kb
+        return weapon_on_use(itemstack, user, pointed_thing, {80, 0, 30, false, 2, 3})  -- speed, grav, dmg, is_blunder, recoil, target_kb
     end,
 })
 
@@ -234,31 +234,39 @@ minetest.register_tool(modname .. ":blunderbuss", {
     end,
 })
 
--- Weapon crafting recipes
--- Blunderbuss: iron block, copper block, stick, flint, steel ingot
+-- Ammo crafting recipe (gunpowder + copper ingot + paper = 4 ammo)
 minetest.register_craft({
-    type = "shapeless",
-    output = modname .. ":blunderbuss",
+    output = modname .. ":ammo 4",
     recipe = {
-        "default:ironblock",
-        "default:copperblock",
-        "default:stick",
-        "default:flint",
-        "default:steel_ingot"
+        {"", "default:gunpowder", ""},
+        {"", "default:copper_ingot", ""},
+        {"", "default:paper", ""}
     },
 })
 
--- Musket/Rifle: 2x iron block, 2x stick, flint, steel ingot
+-- Blunderbuss crafting recipe
+-- Row 1: blank, flint, blank
+-- Row 2: wood block, copper block, steel block
+-- Row 3: blank, steel ingot, stick
 minetest.register_craft({
-    type = "shapeless",
+    output = modname .. ":blunderbuss",
+    recipe = {
+        {"", "default:flint", ""},
+        {"default:wood", "default:copperblock", "default:steelblock"},
+        {"", "default:steel_ingot", "default:stick"}
+    },
+})
+
+-- Musket/Rifle crafting recipe
+-- Row 1: blank, flint, blank
+-- Row 2: wood block, steel block, steel block
+-- Row 3: blank, steel ingot, stick
+minetest.register_craft({
     output = modname .. ":musket",
     recipe = {
-        "default:ironblock",
-        "default:ironblock",
-        "default:stick",
-        "default:stick",
-        "default:flint",
-        "default:steel_ingot"
+        {"", "default:flint", ""},
+        {"default:wood", "default:steelblock", "default:steelblock"},
+        {"", "default:steel_ingot", "default:stick"}
     },
 })
 
