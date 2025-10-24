@@ -235,16 +235,31 @@ minetest.register_tool(modname .. ":blunderbuss", {
 })
 
 -- Weapon crafting recipes
-minetest.register_craft({
-    type = "shapeless",
-    output = modname .. ":musket",
-    recipe = {"default:steel_ingot", "default:steel_ingot", "group:wood", "default:stick"},
-})
-
+-- Blunderbuss: iron block, copper block, stick, flint, steel ingot
 minetest.register_craft({
     type = "shapeless",
     output = modname .. ":blunderbuss",
-    recipe = {"default:steel_ingot", "group:wood", "default:stick", "default:coal_lump"},
+    recipe = {
+        "default:ironblock",
+        "default:copperblock",
+        "default:stick",
+        "default:flint",
+        "default:steel_ingot"
+    },
+})
+
+-- Musket/Rifle: 2x iron block, 2x stick, flint, steel ingot
+minetest.register_craft({
+    type = "shapeless",
+    output = modname .. ":musket",
+    recipe = {
+        "default:ironblock",
+        "default:ironblock",
+        "default:stick",
+        "default:stick",
+        "default:flint",
+        "default:steel_ingot"
+    },
 })
 
 print("[" .. modname .. "] Loaded with fixed sound references!")
