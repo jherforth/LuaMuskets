@@ -142,8 +142,8 @@ local function shoot(user, speed, grav, base_damage, is_blunder, recoil_strength
         end
     end
 
-    -- Custom firing sound
-    local fire_sound = is_blunder and "blunderbuss.ogg" or "rifle.ogg"
+    -- Custom firing sound (without .ogg extension)
+    local fire_sound = is_blunder and "blunderbuss" or "rifle"
     minetest.sound_play(fire_sound, {pos = pos, gain = 1.0, max_hear_distance = 20})
 
     -- Apply knockback to user (recoil)
@@ -200,7 +200,7 @@ local function weapon_on_use(itemstack, user, pointed_thing, shoot_params)
         inv:remove_item("main", modname .. ":ammo")
         meta:set_int("loaded", 1)
         itemstack:set_meta(meta)
-        minetest.sound_play("reload.ogg", {to_player = pname, gain = 0.5})  -- Custom reload sound
+        minetest.sound_play("reload", {to_player = pname, gain = 0.5})  -- Custom reload sound (without .ogg)
         minetest.chat_send_player(pname, "Reloaded!")
         return itemstack
     else
@@ -249,4 +249,4 @@ minetest.register_craft({
     recipe = {"default:steel_ingot", "group:wood", "default:stick", "default:coal_lump"},
 })
 
-print("[" .. modname .. "] Loaded with custom reload sound and all mechanics!")
+print("[" .. modname .. "] Loaded with fixed sound references!")
