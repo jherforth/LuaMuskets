@@ -1,6 +1,6 @@
 -- Simple Guns Mod for Minetest
 -- Adds a musket (heavy drop, fixed damage) and blunderbuss (short-range, distance-scaling damage with spread)
--- Now with ammo reload mechanics and firing knockback!
+-- Now with ammo reload mechanics, knockback, target knockback, and nighttime muzzle flash!
 
 local modname = "simple_guns"
 
@@ -30,6 +30,7 @@ minetest.register_entity(modname .. ":projectile", {
     velocity = vector.new(),
     grav = 0,
     damage = 0,
+    target_kb = 0,  -- Target knockback strength
     start_pos = nil,
     radius = 1,
 
@@ -38,6 +39,7 @@ minetest.register_entity(modname .. ":projectile", {
         -- Default vel/grav if not set by spawner
         if not self.velocity then self.velocity = vector.new() end
         if not self.grav then self.grav = 0 end
+        if not self.target_kb then self.target_kb = 0 end
     end,
 
     on_step = function(self, dtime)
@@ -79,6 +81,13 @@ minetest.register_entity(modname .. ":projectile", {
                             full_punch_interval = 1.0,
                             damage_groups = {fleshy = calc_damage},
                         })
+
+                        -- Apply target knockback
+                        if self.target_kb > 0 then
+                            local kb_dir = vector.normalize(self.velocity)
+                            local kb_vec = vector.multiply(kb_dir, self.target_kb)
+                            obj:add_velocity(kb_vec)
+                        end
                     end
                     self:impact(pos)
                     return
@@ -95,7 +104,7 @@ minetest.register_entity(modname .. ":projectile", {
 })
 
 -- Shoot function (shared, with blunderbuss spread and knockback)
-local function shoot(user, speed, grav, base_damage, is_blunder, recoil_strength)
+local function shoot(user, speed, grav, base_damage, is_blunder, recoil_strength, target_kb_strength)
     local dir = user:get_look_dir()
     local pos = user:get_pos()
     pos.y = pos.y + 1.625  -- Eye height
@@ -123,6 +132,7 @@ local function shoot(user, speed, grav, base_damage, is_blunder, recoil_strength
                 ent.velocity = vector.multiply(spread_dir, pellet_speed)
                 ent.grav = grav
                 ent.damage = pellet_damage
+                ent.target_kb = target_kb_strength  -- Set target knockback
                 if is_blunder then
                     ent.start_pos = vector.new(pos)
                     ent.radius = 1.5  -- Wider hit detection for spread
@@ -135,12 +145,36 @@ local function shoot(user, speed, grav, base_damage, is_blunder, recoil_strength
     -- Firing sound
     minetest.sound_play("default_place_node_hard", {pos = pos, gain = 1.0, max_hear_distance = 20})
 
-    -- Apply knockback to user
+    -- Apply knockback to user (recoil)
     if recoil_strength > 0 then
         local recoil_dir = vector.new(dir)
         recoil_dir.y = recoil_dir.y + 0.2  -- Slight upward kick
         local recoil = vector.multiply(recoil_dir, -recoil_strength)
         user:add_velocity(recoil)
+    end
+
+    -- Nighttime muzzle flash
+    local time = minetest.get_timeofday()
+    if time > 0.75 or time < 0.25 then  -- Night/dark (adjust thresholds as needed)
+        -- Muzzle position: slightly forward
+        local muzzle_pos = vector.add(pos, vector.multiply(dir, 0.5))
+        -- Particle spawner for flash (bright, short-lived glow)
+        minetest.add_particlespawner({
+            amount = 20,  -- Number of particles
+            time = 0.1,   -- Lifetime (s)
+            minpos = {x = muzzle_pos.x - 0.1, y = muzzle_pos.y - 0.1, z = muzzle_pos.z - 0.1},
+            maxpos = {x = muzzle_pos.x + 0.1, y = muzzle_pos.y + 0.1, z = muzzle_pos.z + 0.1},
+            minvel = {x = -1, y = -1, z = -1},  -- Slight random spread
+            maxvel = {x = 1, y = 1, z = 1},
+            minacc = vector.new(0, -10, 0),  -- Drop quickly
+            maxacc = vector.new(0, -10, 0),
+            minexptime = 0.05,
+            maxexptime = 0.1,
+            minsize = 0.5,
+            maxsize = 1.0,
+            texture = "default_flame.png",  -- Bright fire-like texture (placeholder)
+            glow = 14,  -- Max glow for visibility in dark
+        })
     end
 end
 
@@ -187,7 +221,7 @@ minetest.register_tool(modname .. ":musket", {
     inventory_image = "default_tool_steelpick.png",  -- Placeholder texture
     groups = {flammable = 2},
     on_use = function(itemstack, user, pointed_thing)
-        return weapon_on_use(itemstack, user, pointed_thing, {60, 50, 15, false, 2})  -- speed, grav, dmg, is_blunder, recoil
+        return weapon_on_use(itemstack, user, pointed_thing, {60, 50, 15, false, 2, 3})  -- speed, grav, dmg, is_blunder, recoil, target_kb
     end,
 })
 
@@ -197,7 +231,7 @@ minetest.register_tool(modname .. ":blunderbuss", {
     inventory_image = "default_tool_mese_pick.png",  -- Placeholder texture
     groups = {flammable = 2},
     on_use = function(itemstack, user, pointed_thing)
-        return weapon_on_use(itemstack, user, pointed_thing, {25, 5, 20, true, 5})  -- speed, grav, dmg, is_blunder, recoil
+        return weapon_on_use(itemstack, user, pointed_thing, {25, 5, 20, true, 5, 6})  -- speed, grav, dmg, is_blunder, recoil, target_kb
     end,
 })
 
@@ -214,4 +248,4 @@ minetest.register_craft({
     recipe = {"default:steel_ingot", "group:wood", "default:stick", "default:coal_lump"},
 })
 
-print("[" .. modname .. "] Loaded with ammo and knockback mechanics!")
+print("[" .. modname .. "] Loaded with all mechanics including nighttime muzzle flash!")
