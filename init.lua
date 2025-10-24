@@ -197,7 +197,7 @@ local function weapon_on_use(itemstack, user, pointed_thing, shoot_params)
             minetest.chat_send_player(pname, "No ammo!")
             return itemstack
         end
-        inv:remove_item("main", modname .. ":ammo")
+        inv:remove_item("main", modname .. ":ammo 1")
         meta:set_int("loaded", 1)
         itemstack:set_meta(meta)
         minetest.sound_play("reload", {to_player = pname, gain = 0.5})  -- Custom reload sound (without .ogg)
