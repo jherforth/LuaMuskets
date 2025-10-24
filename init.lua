@@ -220,7 +220,7 @@ minetest.register_tool(modname .. ":musket", {
     inventory_image = "muzzleloaders_musket.png",  -- Your custom musket icon
     groups = {flammable = 2},
     on_use = function(itemstack, user, pointed_thing)
-        return weapon_on_use(itemstack, user, pointed_thing, {80, 30, 15, false, 2, 3})  -- speed, grav, dmg, is_blunder, recoil, target_kb
+        return weapon_on_use(itemstack, user, pointed_thing, {80, 30, 30, false, 2, 3})  -- speed, grav, dmg, is_blunder, recoil, target_kb
     end,
 })
 
